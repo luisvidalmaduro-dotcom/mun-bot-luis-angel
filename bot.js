@@ -1,149 +1,142 @@
-function limpiarTexto(texto) {
-  return texto
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
+// =============================
+// 🔗 URL DE TU BACKEND (RENDER)
+// =============================
+const URL_BACKEND = "https://mun-ai-server.onrender.com/chat"; // 👈 CAMBIA SI TU LINK ES DIFERENTE
 
-function similitud(a, b) {
-  let palabrasA = a.split(" ");
-  let palabrasB = b.split(" ");
-  let coincidencias = palabrasA.filter(p => palabrasB.includes(p));
-  return coincidencias.length;
-}
+// =============================
+// 🚀 FUNCIÓN PRINCIPAL
+// =============================
+async function enviarMensaje() {
+  const input = document.getElementById("pregunta");
+  const respuesta = document.getElementById("respuesta");
 
-function buscar() {
-  let input = document.getElementById("pregunta").value;
-  let limpio = limpiarTexto(input);
+  let mensaje = input.value.trim();
 
-  let mejorResultado = null;
-  let mejorPuntaje = 0;
-
-  base.forEach(item => {
-    let pregunta = limpiarTexto(item.pregunta);
-
-    let puntaje = similitud(limpio, pregunta);
-
-    if (item.keywords) {
-      item.keywords.forEach(k => {
-        if (limpio.includes(limpiarTexto(k))) {
-          puntaje += 2;
-        }
-      });
-    }
-
-    if (puntaje > mejorPuntaje) {
-      mejorPuntaje = puntaje;
-      mejorResultado = item;
-    }
-  });
-
-  if (mejorResultado && mejorPuntaje > 0) {
-    document.getElementById("respuesta").innerHTML =
-      `<b>📚 Categoría:</b> ${mejorResultado.categoria}<br><br>
-       <b>🧠 Respuesta corta:</b><br>${mejorResultado.respuesta_corta}<br><br>
-       <b>📖 Explicación:</b><br>${mejorResultado.respuesta_larga}`;
-  } else {
-    document.getElementById("respuesta").innerHTML =
-      "❌ No encontré respuesta.<br><br>Intenta con: mocion, quorum, caucus, resolucion...";
-  }
-}
-
-function auto(texto) {
-  document.getElementById("pregunta").value = texto;
-  buscar();
-}
-let estado = "normal";
-
-function modoEntrenamiento() {
-  estado = "inicio";
-
-  document.getElementById("respuesta").innerHTML =
-    "🎓 <b>Modo Entrenamiento Activado</b><br><br>" +
-    "La mesa dice: 'Se abre la sesión. ¿Alguna moción?'";
-}
-
-function buscar() {
-  let input = document.getElementById("pregunta").value.toLowerCase();
-
-  if (estado !== "normal") {
-    manejarEntrenamiento(input);
+  if (mensaje === "") {
+    respuesta.innerHTML = "⚠️ Escribe una pregunta.";
     return;
   }
 
-  // BOT NORMAL (lo que ya tienes)
-  let limpio = limpiarTexto(input);
+  // Mostrar carga
+  respuesta.innerHTML = "🤖 Pensando...";
 
-  let mejorResultado = null;
-  let mejorPuntaje = 0;
+  try {
+    const res = await fetch(URL_BACKEND, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: mensaje
+      })
+    });
 
-  base.forEach(item => {
-    let pregunta = limpiarTexto(item.pregunta);
+    const data = await res.json();
 
-    let puntaje = similitud(limpio, pregunta);
-
-    if (item.keywords) {
-      item.keywords.forEach(k => {
-        if (limpio.includes(limpiarTexto(k))) {
-          puntaje += 2;
-        }
-      });
+    if (data.reply) {
+      respuesta.innerHTML = data.reply;
+    } else {
+      respuesta.innerHTML = "❌ No se recibió respuesta.";
     }
 
-    if (puntaje > mejorPuntaje) {
-      mejorPuntaje = puntaje;
-      mejorResultado = item;
+  } catch (error) {
+    respuesta.innerHTML = "❌ Error de conexión con el servidor.";
+  }
+
+  input.value = "";
+}
+
+// =============================
+// ⌨️ ENTER PARA ENVIAR
+// =============================
+document.addEventListener("DOMContentLoaded", () => {
+  const input = document.getElementById("pregunta");
+
+  input.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") {
+      enviarMensaje();
     }
   });
+});
 
-  if (mejorResultado && mejorPuntaje > 0) {
-    document.getElementById("respuesta").innerHTML =
-      `<b>📚 Categoría:</b> ${mejorResultado.categoria}<br><br>
-       ${mejorResultado.respuesta_corta}<br><br>
-       ${mejorResultado.respuesta_larga}`;
-  } else {
-    document.getElementById("respuesta").innerHTML =
-      "❌ No encontré respuesta.";
-  }
+// =============================
+// ⚡ BOTONES RÁPIDOS
+// =============================
+function auto(texto) {
+  document.getElementById("pregunta").value = texto;
+  enviarMensaje();
 }
-function manejarEntrenamiento(input) {
 
-  if (estado === "inicio") {
+// =============================
+// 🎓 MODO ENTRENAMIENTO (JUEZ IA)
+// =============================
+let modoEntrenamientoActivo = false;
 
-    if (input.includes("mocion")) {
-      estado = "caucus";
+function activarEntrenamiento() {
+  modoEntrenamientoActivo = true;
 
-      document.getElementById("respuesta").innerHTML =
-        "✅ Buena moción.<br><br>" +
-        "La mesa acepta. Entramos a caucus moderado.<br><br>" +
-        "🎤 Tienes 30 segundos. Expón tu idea.";
+  document.getElementById("respuesta").innerHTML =
+    "🎓 <b>Modo Entrenamiento Activado</b><br><br>" +
+    "La mesa dice:<br><br>" +
+    "<i>'Se abre la sesión. ¿Alguna moción en el piso?'</i><br><br>" +
+    "👉 Escribe tu respuesta como delegado.";
+}
+
+// =============================
+// 🧠 INTERCEPTAR MENSAJES
+// =============================
+async function enviarMensaje() {
+  const input = document.getElementById("pregunta");
+  const respuesta = document.getElementById("respuesta");
+
+  let mensaje = input.value.trim();
+
+  if (mensaje === "") {
+    respuesta.innerHTML = "⚠️ Escribe algo.";
+    return;
+  }
+
+  respuesta.innerHTML = "🤖 Pensando...";
+
+  try {
+    let prompt;
+
+    if (modoEntrenamientoActivo) {
+      prompt = `
+Eres un juez experto de Modelos de Naciones Unidas en República Dominicana.
+
+Evalúa esta intervención de un delegado en comité.
+
+Debes dar:
+1. Qué hizo bien
+2. Qué hizo mal
+3. Cómo mejorar
+4. Ejemplo correcto de respuesta
+
+Respuesta del delegado:
+"${mensaje}"
+      `;
     } else {
-      document.getElementById("respuesta").innerHTML =
-        "❌ Debes proponer una moción correctamente.";
+      prompt = mensaje;
     }
 
+    const res = await fetch(URL_BACKEND, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: prompt
+      })
+    });
+
+    const data = await res.json();
+
+    respuesta.innerHTML = data.reply;
+
+  } catch (error) {
+    respuesta.innerHTML = "❌ Error conectando con el servidor.";
   }
 
-  else if (estado === "caucus") {
-
-    estado = "feedback";
-
-    document.getElementById("respuesta").innerHTML =
-      "🧠 Evaluación:<br><br>" +
-      "✔ Participaste<br>" +
-      "✔ Intentaste argumentar<br><br>" +
-      "💡 Mejora: sé más claro y directo.<br><br>" +
-      "¿Quieres intentar otra vez? escribe 'reiniciar'";
-  }
-
-  else if (estado === "feedback") {
-
-    if (input.includes("reiniciar")) {
-      modoEntrenamiento();
-    } else {
-      document.getElementById("respuesta").innerHTML =
-        "Escribe 'reiniciar' para practicar otra vez.";
-    }
-
-  }
+  input.value = "";
 }
