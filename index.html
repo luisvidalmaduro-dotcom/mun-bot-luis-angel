@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>MUN RD Assistant PRO</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: white;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .sub {
+      text-align: center;
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+
+    .box {
+      background: rgba(30, 41, 59, 0.9);
+      padding: 25px;
+      border-radius: 15px;
+      max-width: 650px;
+      margin: auto;
+      box-shadow: 0px 10px 30px rgba(0,0,0,0.5);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 8px;
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #2563eb;
+      transform: scale(1.05);
+    }
+
+    .botones {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #respuesta {
+      margin-top: 20px;
+      background: #020617;
+      padding: 15px;
+      border-radius: 10px;
+      min-height: 100px;
+      line-height: 1.5;
+    }
+
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🤖 MUN RD Assistant PRO</h1>
+  <p class="sub">Sistema de entrenamiento MUN RD - Nivel Regional</p>
+
+  <div class="box">
+
+    <input type="text" id="pregunta" placeholder="Ej: como hacer una mocion, quorum, caucus">
+
+    <button onclick="buscar()">Preguntar</button>
+
+    <div class="botones">
+      <button onclick="auto('mocion')">Moción</button>
+      <button onclick="auto('quorum')">Quórum</button>
+      <button onclick="auto('caucus moderado')">Caucus</button>
+      <button onclick="auto('position paper')">Position Paper</button>
+      <button onclick="auto('resolucion')">Resolución</button>
+      <button onclick="auto('como ganar')">Cómo ganar</button>
+      <button onclick="modoEntrenamiento()">🎓 Entrenar</button>
+    </div>
+
+    <div id="respuesta">Haz una pregunta para empezar...</div>
+
+  </div>
+
+  <div class="footer">
+    Desarrollado por <b>Luis Angel Vidal Maduro</b><br>
+    Secretario de Comunicaciones<br>
+    Regional 01 - Distrito 01-02
+  </div>
+
+  <script src="data.js"></script>
+  <script src="bot.js"></script>
+
+</body>
+</html>
